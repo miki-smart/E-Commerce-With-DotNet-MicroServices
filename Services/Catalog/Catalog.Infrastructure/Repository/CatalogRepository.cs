@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Catalog.Infrastructure.Repository
 {
-    public class CatalogRepository : IProductRepository, IBrandRepository, ITypeRepository
+    public class CatalogRepository : ICatalogRepository
     {
         private readonly ICatalogContext _context;
         public CatalogRepository(CatalogContext context)
@@ -50,10 +50,20 @@ namespace Catalog.Infrastructure.Repository
             FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductBrand.Id, brandId);
             return await _context.Product.Find(filter).ToListAsync();
         }
+        public async Task<IEnumerable<Product>> GetProductsByBrandName(string brandName)
+        {
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductBrand.Name, brandName);
+            return await _context.Product.Find(filter).ToListAsync();
+        }
 
         public async Task<IEnumerable<Product>> GetProductsByType(string typeId)
         {
             FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductType.Id, typeId);
+            return await _context.Product.Find(filter).ToListAsync();
+        }
+        public async Task<IEnumerable<Product>> GetProductsByTypeName(string typeName)
+        {
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductType.Name, typeName);
             return await _context.Product.Find(filter).ToListAsync();
         }
 
