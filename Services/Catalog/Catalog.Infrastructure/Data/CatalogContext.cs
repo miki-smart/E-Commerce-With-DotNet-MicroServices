@@ -20,13 +20,15 @@ namespace Catalog.Infrastructure.Data
         {
             var client = new MongoClient(configuration.GetValue<string>("DatabaseSettings:ConnectionString"));
             var database = client.GetDatabase(configuration.GetValue<string>("DatabaseSettings:DatabaseName"));
-
-            Product = database.GetCollection<Product>(configuration.GetValue<string>("DatabaseSettings:ProductCollection"));
-            ProductContextSeed.SeedData(Product);
+            
             ProductBrand = database.GetCollection<ProductBrand>(configuration.GetValue<string>("DatabaseSettings:BrandCollection"));
-            BrandContextSeed.SeedData(ProductBrand);
+            
             ProductType = database.GetCollection<ProductType>(configuration.GetValue<string>("DatabaseSettings:TypeCollection"));
+            
+            Product = database.GetCollection<Product>(configuration.GetValue<string>("DatabaseSettings:ProductCollection"));
+            BrandContextSeed.SeedData(ProductBrand);
             TypeContextSeed.SeedData(ProductType);
+            ProductContextSeed.SeedData(Product);
         }
     }
 }

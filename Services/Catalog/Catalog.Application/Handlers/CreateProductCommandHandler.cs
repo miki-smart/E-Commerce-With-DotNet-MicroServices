@@ -27,8 +27,8 @@ namespace Catalog.Application.Handlers
                 Description = request.Description,
                 Price = request.Price,
                 ImageFile = request.ImageFile,
-                ProductBrand= request.Brands,
-                ProductType = request.Types
+                Brands= request.Brands,
+                Types = request.Types
             };
             var result = await _productRepository.Create(product);
             

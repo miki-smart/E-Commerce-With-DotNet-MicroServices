@@ -1,6 +1,8 @@
 ﻿using Catalog.Core.Entities;
 using Catalog.Core.Repository;
+using Catalog.Core.SpecParams;
 using Catalog.Infrastructure.Data;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ namespace Catalog.Infrastructure.Repository
     public class CatalogRepository : ICatalogRepository
     {
         private readonly ICatalogContext _context;
-        public CatalogRepository(CatalogContext context)
+        public CatalogRepository(ICatalogContext context)
         {
             _context = context;   
         }
@@ -40,30 +42,69 @@ namespace Catalog.Infrastructure.Repository
             return await _context.ProductBrand.Find(p => true).ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProducts()
+        public async Task<Pagination<Product>> GetProducts(CatalogSpecParams catalogSpecParams)
         {
-            return await _context.Product.Find(p => true).ToListAsync();
+            var builder = Builders<Product>.Filter;
+            var filter = builder.Empty;
+            if (!string.IsNullOrEmpty(catalogSpecParams.BrandId))
+            {   
+                filter = builder.Eq(p => p.Brands.Id, catalogSpecParams.BrandId);
+            }
+            if (!string.IsNullOrEmpty(catalogSpecParams.TypeId))
+            {
+                filter = builder.Eq(p => p.Types.Id, catalogSpecParams.TypeId);
+            }
+            if (!string.IsNullOrEmpty(catalogSpecParams.Search))
+            {
+                var searchFilter = builder.Regex(x => x.Name, new BsonRegularExpression(catalogSpecParams.Search));
+                filter &=searchFilter;
+            }
+            
+            if (!string.IsNullOrEmpty(catalogSpecParams.Sort))
+            {
+                var sort = catalogSpecParams.Sort switch
+                {
+                    "priceAsc" => Builders<Product>.Sort.Ascending(p => p.Price),
+                    "priceDesc" => Builders<Product>.Sort.Descending(p => p.Price),
+                    _ => Builders<Product>.Sort.Ascending(p => p.Name)
+                };
+                return new Pagination<Product>(
+                    catalogSpecParams.PageIndex,
+                    catalogSpecParams.PageSize,
+                     await _context.Product.CountDocumentsAsync(filter),
+                    await _context.Product.Find(filter).Sort(sort).Skip((catalogSpecParams.PageIndex - 1)
+                * catalogSpecParams.PageSize).Limit(catalogSpecParams.PageSize).ToListAsync()
+                );
+            }
+            return new Pagination<Product>(
+                    catalogSpecParams.PageIndex,
+                    catalogSpecParams.PageSize,
+                     await _context.Product.CountDocumentsAsync(filter),
+                    await _context.Product.Find(filter).Skip((catalogSpecParams.PageIndex - 1)
+                * catalogSpecParams.PageSize).Limit(catalogSpecParams.PageSize).ToListAsync()
+                );
+
         }
 
         public async Task<IEnumerable<Product>> GetProductsByBrand(string brandId)
         {
-            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductBrand.Id, brandId);
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Brands.Id, brandId);
             return await _context.Product.Find(filter).ToListAsync();
         }
         public async Task<IEnumerable<Product>> GetProductsByBrandName(string brandName)
         {
-            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductBrand.Name, brandName);
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Brands.Name, brandName);
             return await _context.Product.Find(filter).ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetProductsByType(string typeId)
         {
-            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductType.Id, typeId);
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Types.Id, typeId);
             return await _context.Product.Find(filter).ToListAsync();
         }
         public async Task<IEnumerable<Product>> GetProductsByTypeName(string typeName)
         {
-            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.ProductType.Name, typeName);
+            FilterDefinition<Product> filter = Builders<Product>.Filter.Eq(p => p.Brands.Name, typeName);
             return await _context.Product.Find(filter).ToListAsync();
         }
 

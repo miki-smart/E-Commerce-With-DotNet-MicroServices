@@ -14,7 +14,7 @@ namespace Catalog.Infrastructure.Data
         public static void SeedData(IMongoCollection<ProductType> typeCollection)
         {
             var checktype = typeCollection.Find(p => true).Any();
-            string path = Path.Combine("Data", "SeedData", "types.json");
+            string path = "../Catalog.Infrastructure/Data/SeedData/types.json";
             if (!checktype)
             {
                 var types = JsonSerializer.Deserialize<List<ProductType>>(File.ReadAllText(path));
