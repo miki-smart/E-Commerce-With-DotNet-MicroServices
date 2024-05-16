@@ -18,7 +18,7 @@ namespace Catalog.Core.Entities
         public string ImageFile { get; set; }
         [BsonRepresentation(MongoDB.Bson.BsonType.Decimal128)]
         public decimal Price { get; set; }  
-        public ProductType ProductType { get; set; }
-        public ProductBrand ProductBrand { get; set; }
+        public ProductType Types { get; set; }
+        public ProductBrand Brands { get; set; }
     }
 }

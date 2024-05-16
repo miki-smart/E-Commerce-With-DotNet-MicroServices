@@ -16,16 +16,16 @@ namespace Catalog.Application.Handlers
 {
     public class GeAllBrandsHandler : IRequestHandler<GetAllBrandsQuery, IList<BrandResponse>>
     {
-        private readonly IBrandRepository _brandRepository;
-        private readonly IMapper _mapper;
-        public GeAllBrandsHandler(IBrandRepository brandRepository,IMapper mapper)
+        private readonly ICatalogRepository _catalogRepository;
+        public GeAllBrandsHandler(ICatalogRepository catalogRepository)
         {
-            _brandRepository = brandRepository;
-            _mapper = mapper;
+
+            _catalogRepository = catalogRepository;
+
         }
         public async Task<IList<BrandResponse>> Handle(GetAllBrandsQuery request, CancellationToken cancellationToken)
         {
-            var brands = await _brandRepository.GetProductBrands();   
+            var brands = await _catalogRepository.GetProductBrands();   
             var result =ProductMapper.MapperExt.Map<IList<ProductBrand>,IList<BrandResponse>>(brands.ToList());
             return result;
         }
